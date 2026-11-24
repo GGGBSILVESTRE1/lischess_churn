@@ -16,9 +16,22 @@ espelho oficial em Parquet no Hugging Face (`Lichess/standard-chess-games`).
    uv run --env-file .env lischess-churn 2024-01 2024-03    # intervalo inclusivo
    ```
 
-A saída fica em `data/raw/AAAA-MM/train-XXXXX-of-YYYYY.parquet` (um arquivo por arquivo
-remoto). Se a execução cair, rode o mesmo comando: os arquivos prontos são pulados.
-No notebook: `duckdb.sql("SELECT * FROM 'data/raw/*/*.parquet'")`.
+Durante a ingestão cada arquivo remoto vira `data/raw/AAAA-MM/train-XXXXX-of-YYYYY.parquet`.
+Se a execução cair, rode o mesmo comando: os arquivos prontos são pulados. Quando o mês
+termina sem falhas, ele é compactado em **`data/raw/games_AAAA-MM.parquet`** e a pasta do
+mês é apagada. É esse arquivo que o SQL e os notebooks leem:
+`duckdb.sql("SELECT * FROM 'data/raw/games_*.parquet'")` (a partir da raiz do projeto).
+
+## Tabela jogador × partida
+
+`sql/01_jogadores.sql` cria a tabela `player_games`, com uma linha por jogador da amostra
+e partida (cada partida vira até duas linhas, uma por lado). Rode da raiz do projeto:
+```
+duckdb churn.duckdb < sql/01_jogadores.sql
+```
+Colunas derivadas principais: `outcome` (win/loss/draw/unfinished, este último para o
+resultado `*`), `is_finished`, `event_type` (rated/casual/tournament), `is_rated`,
+`competition` (arena/swiss), `speed` e `vs_bot`.
 
 ## Decisões de projeto
 

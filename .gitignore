@@ -14,3 +14,7 @@ data/
 
 # Segredos locais (nunca versionar)
 .env
+
+# Banco DuckDB local (gerado a partir de data/)
+*.duckdb
+*.duckdb.wal
